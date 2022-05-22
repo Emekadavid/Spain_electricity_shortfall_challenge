@@ -58,9 +58,35 @@ def _preprocess_data(data):
     # ---------------------------------------------------------------
 
     # ----------- Replace this code with your own preprocessing steps --------
-    predict_vector = feature_vector_df[['Madrid_wind_speed','Bilbao_rain_1h','Valencia_wind_speed']]
+    #predict_vector = feature_vector_df[['Madrid_wind_speed','Bilbao_rain_1h','Valencia_wind_speed']]
     # ------------------------------------------------------------------------
+    # set the first column to be the index
+    feature_vector_df = feature_vector_df.set_index('Unnamed: 0')
+    # convert the time variable to a datetime datatype
+    feature_vector_df['time'] = pd.to_datetime(feature_vector_df['time'])
+    # extract relevant metrics like year, month, weekday, hour from the time feature
+    feature_vector_df['Year'] = feature_vector_df['time'].dt.year
+    # extract month
+    feature_vector_df['Month'] = feature_vector_df['time'].dt.month
+    # extract weekday
+    feature_vector_df['Weekday'] = feature_vector_df['time'].dt.dayofweek
+    # extract hour from the time feature
+    feature_vector_df['Hour'] = feature_vector_df['time'].dt.hour
+    # we now drop the time feature since the relevant metrics have been extracted
+    feature_vector_df.drop("time", axis=1, inplace=True)
+    # encode the Valencia_wind_deg values as numbers
+    feature_vector_df['Valencia_wind_deg'] = feature_vector_df['Valencia_wind_deg'].str.extract(r'(\d+$)')
+    # convert the data type to numeric
+    feature_vector_df["Valencia_wind_deg"] = pd.to_numeric(feature_vector_df["Valencia_wind_deg"])
+    # encode the Valencia_wind_deg values as numbers
+    feature_vector_df['Seville_pressure'] = feature_vector_df['Seville_pressure'].str.extract(r'(\d+$)')
+    # convert the data type to numeric
+    feature_vector_df["Seville_pressure"] = pd.to_numeric(feature_vector_df["Seville_pressure"])
+    # impute missing values using mode
+    feature_vector_df["Valencia_pressure"].fillna(1016, inplace=True)
+    predict_vector = feature_vector_df
 
+    #return feature_vector_df
     return predict_vector
 
 def load_model(path_to_model:str):
